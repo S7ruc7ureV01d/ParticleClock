@@ -6,9 +6,11 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * A single drifting dot. Wraps around the edges of whatever bounds it is
- * currently told about, so it survives a resize (e.g. screen rotation)
- * without needing to be recreated.
+ * A single drifting dot. It's allowed to wander past the edges of the
+ * screen into an invisible border, bouncing back once it reaches the far
+ * side of that border, rather than teleporting to the opposite edge. That
+ * way a connection line to a particle that has drifted just off-screen
+ * keeps drawing smoothly instead of snapping away.
  */
 class Particle(
     var x: Float,
@@ -19,19 +21,28 @@ class Particle(
     /** This particle's own RGB (alpha ignored, applied separately when drawn). */
     var colorRgb: Int = Color.WHITE
 ) {
-    fun update(width: Float, height: Float) {
+    /** [minX]/[minY]/[maxX]/[maxY] describe the outer edge of the invisible border, not the screen itself. */
+    fun update(minX: Float, minY: Float, maxX: Float, maxY: Float) {
         x += vx
         y += vy
 
-        if (width <= 0f || height <= 0f) return
+        if (maxX <= minX || maxY <= minY) return
 
-        if (x < 0f) x += width else if (x > width) x -= width
-        if (y < 0f) y += height else if (y > height) y -= height
+        if (x < minX) {
+            x = minX
+            vx = -vx
+        } else if (x > maxX) {
+            x = maxX
+            vx = -vx
+        }
 
-        // Keep particles sane after a large bounds change (e.g. rotation)
-        // instead of drifting off into space forever.
-        if (x < 0f || x > width) x = x.mod(width)
-        if (y < 0f || y > height) y = y.mod(height)
+        if (y < minY) {
+            y = minY
+            vy = -vy
+        } else if (y > maxY) {
+            y = maxY
+            vy = -vy
+        }
     }
 
     companion object {

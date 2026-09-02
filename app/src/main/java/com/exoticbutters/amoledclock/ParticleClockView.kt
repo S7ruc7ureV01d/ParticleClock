@@ -41,6 +41,8 @@ class ParticleClockView @JvmOverloads constructor(
     private val particleSpeedMaxDp = 0.80f
     private val edgePaddingDp = 20f
     private val dragTouchMarginDp = 32f
+    /** How far past the visible edge particles may drift before bouncing back. */
+    private val particleBorderDp = 120f
 
     private val fadeDurationMs = 320L
     private val clockTickMs = 1_000L
@@ -94,7 +96,12 @@ class ParticleClockView @JvmOverloads constructor(
 
     private val particleTick = object : Runnable {
         override fun run() {
-            for (p in particles) p.update(viewWidth, viewHeight)
+            val border = particleBorderDp * density
+            val minX = -border
+            val minY = -border
+            val maxX = viewWidth + border
+            val maxY = viewHeight + border
+            for (p in particles) p.update(minX, minY, maxX, maxY)
             invalidate()
             mainHandler.postDelayed(this, frameIntervalMs)
         }
