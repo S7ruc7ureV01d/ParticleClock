@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Particle Clock</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_clock_size">Clock size</string>
+    <string name="settings_particle_count">Particle count</string>
+    <string name="settings_red_chance">Red particle chance</string>
+    <string name="settings_red_brightness">Red particle brightness</string>
+    <string name="settings_close">Done</string>
+</resources>
