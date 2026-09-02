@@ -326,6 +326,15 @@ object SettingsDialog {
             onChanged()
         }
 
+        addSlider(
+            root,
+            context.getString(R.string.settings_connection_distance),
+            Prefs.CONNECTION_DISTANCE_MIN_DP, Prefs.CONNECTION_DISTANCE_MAX_DP, prefs.connectionDistanceDp
+        ) { value ->
+            prefs.connectionDistanceDp = value
+            onChanged()
+        }
+
         // ---- Line color mode ----
         val lineColorContainer = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL

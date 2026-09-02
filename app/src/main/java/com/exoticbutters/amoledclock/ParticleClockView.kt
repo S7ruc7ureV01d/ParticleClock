@@ -39,7 +39,6 @@ class ParticleClockView @JvmOverloads constructor(
     // ---- Fixed look & feel constants (not user-configurable) ----
     private val particleSpeedMinDp = 0.20f
     private val particleSpeedMaxDp = 0.80f
-    private val connectionDistanceDp = 90f
     private val edgePaddingDp = 20f
     private val dragTouchMarginDp = 32f
 
@@ -356,7 +355,7 @@ class ParticleClockView @JvmOverloads constructor(
 
     private fun drawParticles(canvas: Canvas) {
         val radius = (prefs.particleSizeTenthsDp / 10f) * density
-        val connectionDistance = connectionDistanceDp * density
+        val connectionDistance = prefs.connectionDistanceDp * density
         linePaint.strokeWidth = (prefs.lineWidthTenthsDp / 10f) * density
         val lineMode = prefs.lineColorMode
         val customLineColor = prefs.lineColor

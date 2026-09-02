@@ -89,6 +89,11 @@ class Prefs(context: Context) {
         get() = prefs.getInt(KEY_PARTICLE_BRIGHTNESS, DEFAULT_PARTICLE_BRIGHTNESS)
         set(value) = prefs.edit().putInt(KEY_PARTICLE_BRIGHTNESS, value).apply()
 
+    /** Max distance (dp) between two particles for a connecting line to be drawn. */
+    var connectionDistanceDp: Int
+        get() = prefs.getInt(KEY_CONNECTION_DISTANCE, DEFAULT_CONNECTION_DISTANCE_DP)
+        set(value) = prefs.edit().putInt(KEY_CONNECTION_DISTANCE, value).apply()
+
     companion object {
         private const val KEY_CLOCK_SIZE = "clock_size_sp"
         private const val KEY_PARTICLE_COUNT = "particle_count"
@@ -106,6 +111,7 @@ class Prefs(context: Context) {
         private const val KEY_LINE_MODE = "line_color_mode"
         private const val KEY_LINE_COLOR = "line_color"
         private const val KEY_PARTICLE_BRIGHTNESS = "particle_brightness"
+        private const val KEY_CONNECTION_DISTANCE = "connection_distance_dp"
 
         const val LINE_MODE_DEFAULT = 0
         const val LINE_MODE_CUSTOM = 1
@@ -139,5 +145,9 @@ class Prefs(context: Context) {
         const val DEFAULT_LINE_WIDTH_TENTHS = 10
 
         const val DEFAULT_PARTICLE_BRIGHTNESS = 200
+
+        const val CONNECTION_DISTANCE_MIN_DP = 20
+        const val CONNECTION_DISTANCE_MAX_DP = 300
+        const val DEFAULT_CONNECTION_DISTANCE_DP = 90
     }
 }

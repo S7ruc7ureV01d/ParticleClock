@@ -12,6 +12,7 @@
     <string name="settings_red_chance">Red particle chance</string>
     <string name="settings_red_brightness">Red particle brightness</string>
     <string name="settings_line_width">Line size</string>
+    <string name="settings_connection_distance">Line connection distance</string>
     <string name="settings_line_color_mode">Line color</string>
     <string name="settings_line_mode_default">Default</string>
     <string name="settings_line_mode_custom">Custom</string>
