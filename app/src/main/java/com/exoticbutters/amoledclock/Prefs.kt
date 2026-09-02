@@ -84,6 +84,11 @@ class Prefs(context: Context) {
         get() = prefs.getInt(KEY_LINE_COLOR, Color.WHITE)
         set(value) = prefs.edit().putInt(KEY_LINE_COLOR, value).apply()
 
+    /** 0-255 alpha used for non-red particles and the lines between them (all line color modes). */
+    var particleBrightness: Int
+        get() = prefs.getInt(KEY_PARTICLE_BRIGHTNESS, DEFAULT_PARTICLE_BRIGHTNESS)
+        set(value) = prefs.edit().putInt(KEY_PARTICLE_BRIGHTNESS, value).apply()
+
     companion object {
         private const val KEY_CLOCK_SIZE = "clock_size_sp"
         private const val KEY_PARTICLE_COUNT = "particle_count"
@@ -100,6 +105,7 @@ class Prefs(context: Context) {
         private const val KEY_RANDOM_COLORS = "random_particle_colors"
         private const val KEY_LINE_MODE = "line_color_mode"
         private const val KEY_LINE_COLOR = "line_color"
+        private const val KEY_PARTICLE_BRIGHTNESS = "particle_brightness"
 
         const val LINE_MODE_DEFAULT = 0
         const val LINE_MODE_CUSTOM = 1
@@ -131,5 +137,7 @@ class Prefs(context: Context) {
         const val LINE_WIDTH_TENTHS_MIN = 2
         const val LINE_WIDTH_TENTHS_MAX = 50
         const val DEFAULT_LINE_WIDTH_TENTHS = 10
+
+        const val DEFAULT_PARTICLE_BRIGHTNESS = 200
     }
 }

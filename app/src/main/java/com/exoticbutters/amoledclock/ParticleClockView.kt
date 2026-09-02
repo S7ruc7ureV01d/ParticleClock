@@ -40,7 +40,6 @@ class ParticleClockView @JvmOverloads constructor(
     private val particleSpeedMinDp = 0.20f
     private val particleSpeedMaxDp = 0.80f
     private val connectionDistanceDp = 90f
-    private val particleAlpha = 130
     private val edgePaddingDp = 20f
     private val dragTouchMarginDp = 32f
 
@@ -361,9 +360,10 @@ class ParticleClockView @JvmOverloads constructor(
         linePaint.strokeWidth = (prefs.lineWidthTenthsDp / 10f) * density
         val lineMode = prefs.lineColorMode
         val customLineColor = prefs.lineColor
+        val particleBrightness = prefs.particleBrightness
 
         for (p in particles) {
-            val alpha = if (p.isRed) prefs.redBrightness else particleAlpha
+            val alpha = if (p.isRed) prefs.redBrightness else particleBrightness
             particlePaint.color = Color.argb(alpha, Color.red(p.colorRgb), Color.green(p.colorRgb), Color.blue(p.colorRgb))
             canvas.drawCircle(p.x, p.y, radius, particlePaint)
         }
@@ -377,7 +377,7 @@ class ParticleClockView @JvmOverloads constructor(
                 val distance = sqrt(dx * dx + dy * dy)
                 if (distance < connectionDistance) {
                     val fade = 1f - distance / connectionDistance
-                    val baseAlpha = if (p1.isRed || p2.isRed) prefs.redBrightness else particleAlpha
+                    val baseAlpha = if (p1.isRed || p2.isRed) prefs.redBrightness else particleBrightness
                     val alpha = (baseAlpha * fade).toInt()
 
                     when (lineMode) {

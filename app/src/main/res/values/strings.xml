@@ -6,6 +6,7 @@
     <string name="settings_particle_count">Particle count</string>
     <string name="settings_particle_size">Particle size</string>
     <string name="settings_particle_speed">Particle speed</string>
+    <string name="settings_particle_brightness">Particle/line brightness</string>
     <string name="settings_random_colors">Random particle colors</string>
     <string name="settings_particle_color">Particle color</string>
     <string name="settings_red_chance">Red particle chance</string>

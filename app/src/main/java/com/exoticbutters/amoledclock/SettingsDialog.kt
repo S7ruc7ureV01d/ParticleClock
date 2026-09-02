@@ -272,6 +272,15 @@ object SettingsDialog {
             onChanged()
         }
 
+        addSlider(
+            root,
+            context.getString(R.string.settings_particle_brightness),
+            0, 255, prefs.particleBrightness
+        ) { value ->
+            prefs.particleBrightness = value
+            onChanged()
+        }
+
         // ---- Particle color ----
         val particleColorContainer = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
