@@ -4,7 +4,11 @@
     <string name="settings_title">Settings</string>
     <string name="settings_clock_size">Clock size</string>
     <string name="settings_particle_count">Particle count</string>
+    <string name="settings_particle_size">Particle size</string>
     <string name="settings_red_chance">Red particle chance</string>
     <string name="settings_red_brightness">Red particle brightness</string>
+    <string name="settings_auto_move">Auto-move</string>
+    <string name="settings_auto_move_warning">Auto-move is off. A clock left in one spot can burn into the screen. Long-press and drag the clock to reposition it.</string>
+    <string name="settings_move_interval">Move interval</string>
     <string name="settings_close">Done</string>
 </resources>

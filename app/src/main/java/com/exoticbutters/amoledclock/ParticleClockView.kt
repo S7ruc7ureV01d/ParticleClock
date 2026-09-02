@@ -11,6 +11,9 @@ import android.graphics.Typeface
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
+import android.view.GestureDetector
+import android.view.HapticFeedbackConstants
+import android.view.MotionEvent
 import android.view.View
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -34,15 +37,17 @@ class ParticleClockView @JvmOverloads constructor(
     // ---- Fixed look & feel constants (not user-configurable) ----
     private val particleSpeedMinDp = 0.20f
     private val particleSpeedMaxDp = 0.80f
-    private val particleRadiusDp = 1.6f
     private val connectionDistanceDp = 90f
     private val particleAlpha = 130
     private val edgePaddingDp = 20f
+    private val dragTouchMarginDp = 32f
 
-    private val moveIntervalMs = 12_000L
     private val fadeDurationMs = 320L
     private val clockTickMs = 1_000L
     private val frameIntervalMs = 33L
+
+    /** Called on any long-press that isn't consumed as a drag-to-reposition start. */
+    var onRequestSettings: (() -> Unit)? = null
 
     private var particles: MutableList<Particle> = mutableListOf()
 
@@ -68,10 +73,25 @@ class ParticleClockView @JvmOverloads constructor(
     private var clockCenterY = 0f
     private var clockAlpha = 255
     private var isAnimating = false
+    private var isDragging = false
     private var hasPlacedInitially = false
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var currentFadeAnimator: ValueAnimator? = null
+
+    private val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+        override fun onDown(e: MotionEvent): Boolean = true
+
+        override fun onLongPress(e: MotionEvent) {
+            if (!prefs.autoMove && isNearClock(e.x, e.y)) {
+                isDragging = true
+                moveClockTo(e.x, e.y)
+                performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            } else {
+                onRequestSettings?.invoke()
+            }
+        }
+    })
 
     private val particleTick = object : Runnable {
         override fun run() {
@@ -92,7 +112,7 @@ class ParticleClockView @JvmOverloads constructor(
     private val moveTick = object : Runnable {
         override fun run() {
             startMove()
-            mainHandler.postDelayed(this, moveIntervalMs)
+            mainHandler.postDelayed(this, prefs.moveIntervalSeconds * 1000L)
         }
     }
 
@@ -114,6 +134,27 @@ class ParticleClockView @JvmOverloads constructor(
     fun applySettings() {
         clockPaint.textSize = prefs.clockSizeSp * resources.displayMetrics.scaledDensity
         rebuildParticles()
+        restartMoveScheduling()
+        invalidate()
+    }
+
+    private fun restartMoveScheduling() {
+        mainHandler.removeCallbacks(moveTick)
+        currentFadeAnimator?.cancel()
+        currentFadeAnimator = null
+        isAnimating = false
+        clockAlpha = 255
+
+        if (viewWidth <= 0f || viewHeight <= 0f) return
+
+        if (prefs.autoMove) {
+            mainHandler.postDelayed(moveTick, prefs.moveIntervalSeconds * 1000L)
+        } else {
+            manualCenterOrNull()?.let {
+                clockCenterX = it[0]
+                clockCenterY = it[1]
+            }
+        }
         invalidate()
     }
 
@@ -151,9 +192,16 @@ class ParticleClockView @JvmOverloads constructor(
 
         if (!hasPlacedInitially) {
             hasPlacedInitially = true
-            val p = randomClockCenter()
-            clockCenterX = p[0]
-            clockCenterY = p[1]
+            placeInitialClock()
+        } else if (!prefs.autoMove) {
+            val m = manualCenterOrNull()
+            if (m != null) {
+                clockCenterX = m[0]
+                clockCenterY = m[1]
+            } else {
+                clockCenterX = clockCenterX.coerceIn(minCenterX(), maxCenterX())
+                clockCenterY = clockCenterY.coerceIn(minCenterY(), maxCenterY())
+            }
         } else {
             clockCenterX = clockCenterX.coerceIn(minCenterX(), maxCenterX())
             clockCenterY = clockCenterY.coerceIn(minCenterY(), maxCenterY())
@@ -161,7 +209,7 @@ class ParticleClockView @JvmOverloads constructor(
         invalidate()
     }
 
-    // ---- Random placement, bounds-aware for any screen size/orientation ----
+    // ---- Random / manual placement, bounds-aware for any screen size/orientation ----
 
     private fun halfTextWidth(): Float = clockPaint.measureText(timeText) / 2f + edgePaddingDp * density
     private fun halfTextHeight(): Float {
@@ -180,6 +228,66 @@ class ParticleClockView @JvmOverloads constructor(
         val cx = if (maxX > minX) Random.nextFloat() * (maxX - minX) + minX else viewWidth / 2f
         val cy = if (maxY > minY) Random.nextFloat() * (maxY - minY) + minY else viewHeight / 2f
         return floatArrayOf(cx, cy)
+    }
+
+    /** The saved drag-and-drop position, translated to this screen's current size, or null if never set. */
+    private fun manualCenterOrNull(): FloatArray? {
+        val fx = prefs.manualPosX
+        val fy = prefs.manualPosY
+        if (fx < 0f || fy < 0f) return null
+        val cx = (fx * viewWidth).coerceIn(minCenterX(), maxCenterX())
+        val cy = (fy * viewHeight).coerceIn(minCenterY(), maxCenterY())
+        return floatArrayOf(cx, cy)
+    }
+
+    private fun placeInitialClock() {
+        val center = if (!prefs.autoMove) {
+            manualCenterOrNull() ?: floatArrayOf(viewWidth / 2f, viewHeight / 2f)
+        } else {
+            randomClockCenter()
+        }
+        clockCenterX = center[0]
+        clockCenterY = center[1]
+    }
+
+    private fun isNearClock(x: Float, y: Float): Boolean {
+        val margin = dragTouchMarginDp * density
+        val halfW = clockPaint.measureText(timeText) / 2f + margin
+        val halfH = (clockPaint.fontMetrics.descent - clockPaint.fontMetrics.ascent) / 2f + margin
+        return x in (clockCenterX - halfW)..(clockCenterX + halfW) &&
+            y in (clockCenterY - halfH)..(clockCenterY + halfH)
+    }
+
+    private fun moveClockTo(x: Float, y: Float) {
+        currentFadeAnimator?.cancel()
+        currentFadeAnimator = null
+        isAnimating = false
+        clockAlpha = 255
+        clockCenterX = x.coerceIn(minCenterX(), maxCenterX())
+        clockCenterY = y.coerceIn(minCenterY(), maxCenterY())
+        invalidate()
+    }
+
+    private fun persistManualPosition() {
+        if (viewWidth <= 0f || viewHeight <= 0f) return
+        prefs.manualPosX = clockCenterX / viewWidth
+        prefs.manualPosY = clockCenterY / viewHeight
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        gestureDetector.onTouchEvent(event)
+        when (event.actionMasked) {
+            MotionEvent.ACTION_MOVE -> if (isDragging) {
+                moveClockTo(event.x, event.y)
+                return true
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> if (isDragging) {
+                isDragging = false
+                persistManualPosition()
+                return true
+            }
+        }
+        return true
     }
 
     // ---- Movement / fade animation ----
@@ -232,7 +340,7 @@ class ParticleClockView @JvmOverloads constructor(
     }
 
     private fun drawParticles(canvas: Canvas) {
-        val radius = particleRadiusDp * density
+        val radius = (prefs.particleSizeTenthsDp / 10f) * density
         val connectionDistance = connectionDistanceDp * density
 
         for (p in particles) {
@@ -282,7 +390,9 @@ class ParticleClockView @JvmOverloads constructor(
         timeText = timeFormat.format(Calendar.getInstance().time)
         mainHandler.post(particleTick)
         mainHandler.post(clockTick)
-        mainHandler.postDelayed(moveTick, moveIntervalMs)
+        if (prefs.autoMove) {
+            mainHandler.postDelayed(moveTick, prefs.moveIntervalSeconds * 1000L)
+        }
     }
 
     fun stop() {

@@ -24,9 +24,8 @@ class MainActivity : Activity() {
         }
 
         clockView = ParticleClockView(this)
-        clockView.setOnLongClickListener {
+        clockView.onRequestSettings = {
             SettingsDialog.show(this, Prefs(this)) { clockView.applySettings() }
-            true
         }
         setContentView(clockView)
     }
