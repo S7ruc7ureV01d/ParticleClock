@@ -6,7 +6,9 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.os.Handler
 import android.os.Looper
@@ -56,7 +58,6 @@ class ParticleClockView @JvmOverloads constructor(
     }
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeWidth = 1f * density
     }
     private val clockPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
@@ -164,13 +165,28 @@ class ParticleClockView @JvmOverloads constructor(
         val redIndex = if (hasRed) Random.nextInt(count) else -1
         val w = if (viewWidth > 0f) viewWidth else 1080f
         val h = if (viewHeight > 0f) viewHeight else 1920f
+        val speedScale = prefs.particleSpeedPercent / 100f
+        val randomColors = prefs.randomParticleColors
+        val baseColor = prefs.particleColor
         particles = MutableList(count) { i ->
+            val isRed = i == redIndex
+            val color = when {
+                isRed -> Color.rgb(255, 50, 50)
+                randomColors -> randomVividColor()
+                else -> baseColor
+            }
             Particle.random(
                 w, h,
-                particleSpeedMinDp * density, particleSpeedMaxDp * density,
-                isRed = i == redIndex
+                particleSpeedMinDp * density * speedScale, particleSpeedMaxDp * density * speedScale,
+                isRed = isRed,
+                colorRgb = color
             )
         }
+    }
+
+    private fun randomVividColor(): Int {
+        val hsv = floatArrayOf(Random.nextFloat() * 360f, 0.7f, 1f)
+        return Color.HSVToColor(hsv)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -342,13 +358,13 @@ class ParticleClockView @JvmOverloads constructor(
     private fun drawParticles(canvas: Canvas) {
         val radius = (prefs.particleSizeTenthsDp / 10f) * density
         val connectionDistance = connectionDistanceDp * density
+        linePaint.strokeWidth = (prefs.lineWidthTenthsDp / 10f) * density
+        val lineMode = prefs.lineColorMode
+        val customLineColor = prefs.lineColor
 
         for (p in particles) {
-            particlePaint.color = if (p.isRed) {
-                Color.argb(prefs.redBrightness, 255, 50, 50)
-            } else {
-                Color.argb(particleAlpha, 255, 255, 255)
-            }
+            val alpha = if (p.isRed) prefs.redBrightness else particleAlpha
+            particlePaint.color = Color.argb(alpha, Color.red(p.colorRgb), Color.green(p.colorRgb), Color.blue(p.colorRgb))
             canvas.drawCircle(p.x, p.y, radius, particlePaint)
         }
 
@@ -361,15 +377,33 @@ class ParticleClockView @JvmOverloads constructor(
                 val distance = sqrt(dx * dx + dy * dy)
                 if (distance < connectionDistance) {
                     val fade = 1f - distance / connectionDistance
-                    if (p1.isRed || p2.isRed) {
-                        linePaint.color = Color.argb((prefs.redBrightness * fade).toInt(), 255, 50, 50)
-                    } else {
-                        linePaint.color = Color.argb((particleAlpha * fade).toInt(), 255, 255, 255)
+                    val baseAlpha = if (p1.isRed || p2.isRed) prefs.redBrightness else particleAlpha
+                    val alpha = (baseAlpha * fade).toInt()
+
+                    when (lineMode) {
+                        Prefs.LINE_MODE_CUSTOM -> {
+                            linePaint.shader = null
+                            linePaint.color = Color.argb(alpha, Color.red(customLineColor), Color.green(customLineColor), Color.blue(customLineColor))
+                        }
+                        Prefs.LINE_MODE_GRADIENT -> {
+                            val c1 = Color.argb(alpha, Color.red(p1.colorRgb), Color.green(p1.colorRgb), Color.blue(p1.colorRgb))
+                            val c2 = Color.argb(alpha, Color.red(p2.colorRgb), Color.green(p2.colorRgb), Color.blue(p2.colorRgb))
+                            linePaint.shader = LinearGradient(p1.x, p1.y, p2.x, p2.y, c1, c2, Shader.TileMode.CLAMP)
+                        }
+                        else -> {
+                            linePaint.shader = null
+                            if (p1.isRed || p2.isRed) {
+                                linePaint.color = Color.argb(alpha, 255, 50, 50)
+                            } else {
+                                linePaint.color = Color.argb(alpha, 255, 255, 255)
+                            }
+                        }
                     }
                     canvas.drawLine(p1.x, p1.y, p2.x, p2.y, linePaint)
                 }
             }
         }
+        linePaint.shader = null
     }
 
     private fun drawClock(canvas: Canvas) {

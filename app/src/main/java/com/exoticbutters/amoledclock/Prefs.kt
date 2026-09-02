@@ -2,6 +2,7 @@ package com.exoticbutters.amoledclock
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
 
 /**
  * Thin wrapper around the settings a long-press on the clock exposes.
@@ -53,6 +54,36 @@ class Prefs(context: Context) {
         get() = prefs.getFloat(KEY_MANUAL_Y, -1f)
         set(value) = prefs.edit().putFloat(KEY_MANUAL_Y, value).apply()
 
+    /** Percent of the default drift speed, e.g. 100 = normal, 200 = double. */
+    var particleSpeedPercent: Int
+        get() = prefs.getInt(KEY_PARTICLE_SPEED, DEFAULT_PARTICLE_SPEED_PERCENT)
+        set(value) = prefs.edit().putInt(KEY_PARTICLE_SPEED, value).apply()
+
+    /** Connection line stroke width in tenths of a dp. */
+    var lineWidthTenthsDp: Int
+        get() = prefs.getInt(KEY_LINE_WIDTH, DEFAULT_LINE_WIDTH_TENTHS)
+        set(value) = prefs.edit().putInt(KEY_LINE_WIDTH, value).apply()
+
+    /** Base color (RGB, alpha ignored) used for particles that aren't red or randomly colored. */
+    var particleColor: Int
+        get() = prefs.getInt(KEY_PARTICLE_COLOR, Color.WHITE)
+        set(value) = prefs.edit().putInt(KEY_PARTICLE_COLOR, value).apply()
+
+    /** When on, every non-red particle gets its own random vivid color instead of [particleColor]. */
+    var randomParticleColors: Boolean
+        get() = prefs.getBoolean(KEY_RANDOM_COLORS, false)
+        set(value) = prefs.edit().putBoolean(KEY_RANDOM_COLORS, value).apply()
+
+    /** One of [LINE_MODE_DEFAULT], [LINE_MODE_CUSTOM], [LINE_MODE_GRADIENT]. */
+    var lineColorMode: Int
+        get() = prefs.getInt(KEY_LINE_MODE, LINE_MODE_DEFAULT)
+        set(value) = prefs.edit().putInt(KEY_LINE_MODE, value).apply()
+
+    /** Line color used when [lineColorMode] is [LINE_MODE_CUSTOM]. */
+    var lineColor: Int
+        get() = prefs.getInt(KEY_LINE_COLOR, Color.WHITE)
+        set(value) = prefs.edit().putInt(KEY_LINE_COLOR, value).apply()
+
     companion object {
         private const val KEY_CLOCK_SIZE = "clock_size_sp"
         private const val KEY_PARTICLE_COUNT = "particle_count"
@@ -63,6 +94,16 @@ class Prefs(context: Context) {
         private const val KEY_MOVE_INTERVAL = "move_interval_seconds"
         private const val KEY_MANUAL_X = "manual_pos_x"
         private const val KEY_MANUAL_Y = "manual_pos_y"
+        private const val KEY_PARTICLE_SPEED = "particle_speed_percent"
+        private const val KEY_LINE_WIDTH = "line_width_tenths_dp"
+        private const val KEY_PARTICLE_COLOR = "particle_color"
+        private const val KEY_RANDOM_COLORS = "random_particle_colors"
+        private const val KEY_LINE_MODE = "line_color_mode"
+        private const val KEY_LINE_COLOR = "line_color"
+
+        const val LINE_MODE_DEFAULT = 0
+        const val LINE_MODE_CUSTOM = 1
+        const val LINE_MODE_GRADIENT = 2
 
         const val CLOCK_SIZE_MIN = 28
         const val CLOCK_SIZE_MAX = 110
@@ -82,5 +123,13 @@ class Prefs(context: Context) {
         const val MOVE_INTERVAL_MIN_SECONDS = 5
         const val MOVE_INTERVAL_MAX_SECONDS = 60
         const val DEFAULT_MOVE_INTERVAL_SECONDS = 12
+
+        const val PARTICLE_SPEED_MIN_PERCENT = 10
+        const val PARTICLE_SPEED_MAX_PERCENT = 400
+        const val DEFAULT_PARTICLE_SPEED_PERCENT = 100
+
+        const val LINE_WIDTH_TENTHS_MIN = 2
+        const val LINE_WIDTH_TENTHS_MAX = 50
+        const val DEFAULT_LINE_WIDTH_TENTHS = 10
     }
 }

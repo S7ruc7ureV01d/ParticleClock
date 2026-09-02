@@ -1,5 +1,6 @@
 package com.exoticbutters.amoledclock
 
+import android.graphics.Color
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -14,7 +15,9 @@ class Particle(
     var y: Float,
     private var vx: Float,
     private var vy: Float,
-    var isRed: Boolean
+    var isRed: Boolean,
+    /** This particle's own RGB (alpha ignored, applied separately when drawn). */
+    var colorRgb: Int = Color.WHITE
 ) {
     fun update(width: Float, height: Float) {
         x += vx
@@ -32,14 +35,14 @@ class Particle(
     }
 
     companion object {
-        fun random(width: Float, height: Float, speedMin: Float, speedMax: Float, isRed: Boolean): Particle {
+        fun random(width: Float, height: Float, speedMin: Float, speedMax: Float, isRed: Boolean, colorRgb: Int): Particle {
             val angle = Random.nextDouble(0.0, Math.PI * 2)
             val speed = Random.nextDouble(speedMin.toDouble(), speedMax.toDouble())
             val vx = (cos(angle) * speed).toFloat()
             val vy = (sin(angle) * speed).toFloat()
             val x = Random.nextDouble(0.0, width.toDouble()).toFloat()
             val y = Random.nextDouble(0.0, height.toDouble()).toFloat()
-            return Particle(x, y, vx, vy, isRed)
+            return Particle(x, y, vx, vy, isRed, colorRgb)
         }
     }
 }
