@@ -15,10 +15,25 @@ android {
         versionName = "1.0"
     }
 
+    val releaseKeystore = file("../release.keystore")
+    if (releaseKeystore.exists()) {
+        signingConfigs {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = "particleclock123"
+                keyAlias = "particleclock"
+                keyPassword = "particleclock123"
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (releaseKeystore.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
