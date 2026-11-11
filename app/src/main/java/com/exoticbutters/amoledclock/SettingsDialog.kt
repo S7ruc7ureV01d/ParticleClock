@@ -16,7 +16,7 @@ import android.widget.TextView
  */
 object SettingsDialog {
 
-    fun show(context: Context, prefs: Prefs, onChanged: () -> Unit) {
+    fun show(context: Context, prefs: Prefs, onChanged: () -> Unit, onOpenHomeAssistant: () -> Unit) {
         val density = context.resources.displayMetrics.density
         val pad = (16 * density).toInt()
 
@@ -203,6 +203,18 @@ object SettingsDialog {
             refresh(selectedIndex)
             container.addView(row)
         }
+
+        // ---- Home Assistant entry point ----
+        root.addView(TextView(context).apply {
+            text = context.getString(R.string.settings_home_assistant)
+            setTextColor(Color.WHITE)
+            textSize = 16f
+            gravity = Gravity.CENTER
+            setPadding(pad / 2, pad / 2, pad / 2, pad / 2)
+            setBackgroundColor(Color.rgb(45, 45, 45))
+            isClickable = true
+            setOnClickListener { onOpenHomeAssistant() }
+        })
 
         // ---- Auto-move + burn-in warning ----
         val warningText = TextView(context).apply {

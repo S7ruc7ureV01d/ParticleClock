@@ -22,4 +22,35 @@
     <string name="settings_auto_move_warning">Auto-move is off. A clock left in one spot can burn into the screen. Long-press and drag the clock to reposition it.</string>
     <string name="settings_move_interval">Move interval</string>
     <string name="settings_close">Done</string>
+    <string name="settings_home_assistant">Home Assistant &amp; sounds…</string>
+
+    <string name="ha_title">Home Assistant</string>
+    <string name="ha_mqtt_heading">MQTT connection</string>
+    <string name="ha_enabled">Connect to Home Assistant</string>
+    <string name="ha_host">Broker host</string>
+    <string name="ha_port">Port</string>
+    <string name="ha_username">Username (optional)</string>
+    <string name="ha_password">Password (optional)</string>
+    <string name="ha_tls">Use TLS</string>
+    <string name="ha_device_name">Device name in Home Assistant</string>
+    <string name="ha_save_connect">Save &amp; connect</string>
+    <string name="ha_status">Status: %1$s</string>
+    <string name="ha_topic_info">Discovered automatically by Home Assistant\'s MQTT integration. Topics live under %1$s/</string>
+    <string name="ha_brightness_heading">Screen brightness</string>
+    <string name="ha_brightness_granted">Home Assistant controls the system brightness and auto-brightness.</string>
+    <string name="ha_brightness_missing">Allow \"Modify system settings\" so Home Assistant can change the system brightness. Until then it only dims this app\'s screen, and the Auto brightness switch does nothing.</string>
+    <string name="ha_brightness_grant">Allow changing system brightness…</string>
+    <string name="ha_no_settings_screen">Couldn\'t open the system settings screen</string>
+    <string name="ha_sounds_heading">Sounds</string>
+    <string name="ha_sounds_info">Each sound shows up in Home Assistant as a \"Play …\" button.</string>
+    <string name="ha_no_sounds">No sounds yet.</string>
+    <string name="ha_add_sound">Add sound…</string>
+    <string name="ha_sound_play">Play</string>
+    <string name="ha_sound_delete">Delete</string>
+    <string name="ha_sound_delete_confirm">Delete \"%1$s\"? Its Home Assistant button will be removed.</string>
+    <string name="ha_sound_name_title">Name this sound</string>
+    <string name="ha_sound_name_message">Letters, numbers, spaces, - and _. A sound with the same name is replaced.</string>
+    <string name="ha_sound_save">Save</string>
+    <string name="ha_no_file_picker">No app available to pick audio files</string>
+    <string name="ha_import_failed">Couldn\'t add sound: %1$s</string>
 </resources>

@@ -94,6 +94,62 @@ class Prefs(context: Context) {
         get() = prefs.getInt(KEY_CONNECTION_DISTANCE, DEFAULT_CONNECTION_DISTANCE_DP)
         set(value) = prefs.edit().putInt(KEY_CONNECTION_DISTANCE, value).apply()
 
+    // ---- Home Assistant / MQTT ----
+
+    var mqttEnabled: Boolean
+        get() = prefs.getBoolean(KEY_MQTT_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_MQTT_ENABLED, value).apply()
+
+    var mqttHost: String
+        get() = prefs.getString(KEY_MQTT_HOST, "").orEmpty()
+        set(value) = prefs.edit().putString(KEY_MQTT_HOST, value).apply()
+
+    var mqttPort: Int
+        get() = prefs.getInt(KEY_MQTT_PORT, DEFAULT_MQTT_PORT)
+        set(value) = prefs.edit().putInt(KEY_MQTT_PORT, value).apply()
+
+    var mqttUsername: String
+        get() = prefs.getString(KEY_MQTT_USERNAME, "").orEmpty()
+        set(value) = prefs.edit().putString(KEY_MQTT_USERNAME, value).apply()
+
+    var mqttPassword: String
+        get() = prefs.getString(KEY_MQTT_PASSWORD, "").orEmpty()
+        set(value) = prefs.edit().putString(KEY_MQTT_PASSWORD, value).apply()
+
+    var mqttTls: Boolean
+        get() = prefs.getBoolean(KEY_MQTT_TLS, false)
+        set(value) = prefs.edit().putBoolean(KEY_MQTT_TLS, value).apply()
+
+    /** Friendly name Home Assistant shows for this device (and prefixes its entity IDs with). */
+    var mqttDeviceName: String
+        get() = prefs.getString(KEY_MQTT_DEVICE_NAME, null)?.takeIf { it.isNotBlank() } ?: DEFAULT_DEVICE_NAME
+        set(value) = prefs.edit().putString(KEY_MQTT_DEVICE_NAME, value).apply()
+
+    /**
+     * Random per-install ID used as the MQTT client ID, topic segment and HA
+     * unique-ID prefix, so several clocks can share one broker. Generated once.
+     */
+    val mqttDeviceId: String
+        get() {
+            prefs.getString(KEY_MQTT_DEVICE_ID, null)?.let { return it }
+            val id = "particleclock_" + java.util.UUID.randomUUID().toString().replace("-", "").take(8)
+            prefs.edit().putString(KEY_MQTT_DEVICE_ID, id).apply()
+            return id
+        }
+
+    /** Sound slugs we last announced to HA, so removed sounds' entities can be deleted. */
+    var mqttPublishedSoundSlugs: Set<String>
+        get() = HashSet(prefs.getStringSet(KEY_MQTT_SOUND_SLUGS, emptySet()) ?: emptySet())
+        set(value) = prefs.edit().putStringSet(KEY_MQTT_SOUND_SLUGS, HashSet(value)).apply()
+
+    /**
+     * 0-100 window brightness set from Home Assistant while the app lacks
+     * permission to change the system brightness, or -1 when not overriding.
+     */
+    var screenBrightnessPercent: Int
+        get() = prefs.getInt(KEY_SCREEN_BRIGHTNESS, -1)
+        set(value) = prefs.edit().putInt(KEY_SCREEN_BRIGHTNESS, value).apply()
+
     companion object {
         private const val KEY_CLOCK_SIZE = "clock_size_sp"
         private const val KEY_PARTICLE_COUNT = "particle_count"
@@ -112,6 +168,19 @@ class Prefs(context: Context) {
         private const val KEY_LINE_COLOR = "line_color"
         private const val KEY_PARTICLE_BRIGHTNESS = "particle_brightness"
         private const val KEY_CONNECTION_DISTANCE = "connection_distance_dp"
+        private const val KEY_MQTT_ENABLED = "mqtt_enabled"
+        private const val KEY_MQTT_HOST = "mqtt_host"
+        private const val KEY_MQTT_PORT = "mqtt_port"
+        private const val KEY_MQTT_USERNAME = "mqtt_username"
+        private const val KEY_MQTT_PASSWORD = "mqtt_password"
+        private const val KEY_MQTT_TLS = "mqtt_tls"
+        private const val KEY_MQTT_DEVICE_NAME = "mqtt_device_name"
+        private const val KEY_MQTT_DEVICE_ID = "mqtt_device_id"
+        private const val KEY_MQTT_SOUND_SLUGS = "mqtt_published_sound_slugs"
+        private const val KEY_SCREEN_BRIGHTNESS = "screen_brightness_percent"
+
+        const val DEFAULT_MQTT_PORT = 1883
+        const val DEFAULT_DEVICE_NAME = "Particle Clock"
 
         const val LINE_MODE_DEFAULT = 0
         const val LINE_MODE_CUSTOM = 1
